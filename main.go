@@ -5,25 +5,28 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/sessions"
+	"github.com/redis/go-redis/v9"
 	"youwe.com/go-web-accelerator/handlers"
 )
+
+var client = redis.NewClient(&redis.Options{
+	Addr:     "localhost:6379",
+	Password: "", // no password set
+	DB:       0,  // use default DB
+})
 
 func main() {
 	userHandler := handlers.UserHandler{}
 
 	mux := http.NewServeMux()
 
-	mux.Handle(
-		"GET /user",
-		withCors(
-			withUser(
-				http.HandlerFunc(
-					userHandler.HandleUserShow,
-				),
-			),
+	middleware := withCors(
+		withUser(
+			http.HandlerFunc(userHandler.HandleUserShow),
 		),
 	)
+
+	mux.Handle("GET /user", middleware)
 
 	log.Fatal(http.ListenAndServe(":3000", mux))
 }
@@ -35,28 +38,44 @@ func withCors(next http.Handler) http.Handler {
 	})
 }
 
-// var store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
-var store = sessions.NewCookieStore([]byte("TEST"))
-
 func withUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, _ := store.Get(r, "session-name")
+		/*cookie, _ := r.Cookie("session-id")
+		if cookie == nil {
+			expire := time.Now().AddDate(0, 0, 1)
+			uuid, _ := uuid.NewV7()
+			sid := uuid.String()
 
-		if session.Values["email"] == nil {
-			session.Values["email"] = "igorwulff@gmail.coasdsadm"
+			//client.Set(context.Background(), sid, "test", expire.Sub(time.Now()))
 
-			// Save it before we write to the response/return from the handler.
-			err := session.Save(r, w)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
+			client.Expire(context.Background(), sid, expire.Sub(time.Now()))
+			client.HSet(
+				context.Background(),
+				sid,
+				"email",
+				"igorwulff@gmail.com",
+			).Err()
+
+			newCookie := http.Cookie{
+				Name:       "session-id",
+				Value:      sid,
+				Path:       "/",
+				Domain:     "/",
+				Expires:    expire,
+				RawExpires: expire.Format(time.UnixDate),
+				MaxAge:     86400,
+				Secure:     true,
+				HttpOnly:   true,
+				Raw:        "session-id=" + sid,
+				Unparsed:   []string{"session-id=" + sid},
 			}
+
+			r.AddCookie(&newCookie)
 		}
-		//https://mkfeuhrer.medium.com/sessions-using-golang-and-redis-2b8fa91b573b
 
-		// Add docker with Redis???
-
-		ctx := context.WithValue(r.Context(), "email", session.Values["email"])
+		data := client.HGetAll(context.Background(), cookie.Value).Val()
+		*/
+		ctx := context.WithValue(r.Context(), "email", "ifdsaf")
 		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)

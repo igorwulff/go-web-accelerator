@@ -1,0 +1,17 @@
+package components
+
+import (
+    "youwe.com/go-web-accelerator/models"
+    layout "youwe.com/go-web-accelerator/components/layout"
+)
+
+templ Show(user models.User) {
+    @layout.Base() {
+        <h1>Hello {user.Email} from the user page.</h1>
+        @Input(InputProps{
+            Type: "email",
+            Name: "email",
+            Label: "Email",
+        })
+    }
+} 
