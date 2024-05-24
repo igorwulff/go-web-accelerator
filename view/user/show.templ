@@ -2,14 +2,14 @@ package user
 
 import (
     "youwe.com/go-web-accelerator/view/layout"
-    "youwe.com/go-web-accelerator/view/component"
-    "youwe.com/go-web-accelerator/model"
+    "youwe.com/go-web-accelerator/components"
+    "youwe.com/go-web-accelerator/models"
 )
 
 templ Show(user model.User) {
     @layout.Base() {
         <h1>Hello {user.Email} from the user page.</h1>
-        @component.Input(component.InputProps{
+        @components.Input(components.InputProps{
             Type: "email",
             Name: "email",
             Label: "Email",
