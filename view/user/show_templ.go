@@ -11,8 +11,8 @@ import "io"
 import "bytes"
 
 import (
-	"youwe.com/go-web-accelerator/model"
-	"youwe.com/go-web-accelerator/view/component"
+	"youwe.com/go-web-accelerator/models"
+	"youwe.com/go-web-accelerator/components"
 	"youwe.com/go-web-accelerator/view/layout"
 )
 
@@ -52,7 +52,7 @@ func Show(user model.User) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = component.Input(component.InputProps{
+			templ_7745c5c3_Err = components.Input(components.InputProps{
 				Type:  "email",
 				Name:  "email",
 				Label: "Email",

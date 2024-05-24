@@ -6,11 +6,11 @@ import (
 	"net/http"
 
 	"github.com/gorilla/sessions"
-	"youwe.com/go-web-accelerator/handler"
+	"youwe.com/go-web-accelerator/handlers"
 )
 
 func main() {
-	userHandler := handler.UserHandler{}
+	userHandler := handlers.UserHandler{}
 
 	mux := http.NewServeMux()
 
