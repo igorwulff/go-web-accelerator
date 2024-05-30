@@ -13,8 +13,10 @@ build:
 # dev runs the development server where it builds the tailwind css sheet,
 # and compiles the project whenever a file is changed.
 dev:
+	docker compose up -d &\
 	templ generate --watch --cmd="go generate" &\
 	templ generate --watch --cmd="go run ."
 
 clean:
+	docker compose stop &\
 	go clean
