@@ -4,7 +4,9 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"youwe.com/go-web-accelerator/handlers"
 )
@@ -40,7 +42,7 @@ func withCors(next http.Handler) http.Handler {
 
 func withUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		/*cookie, _ := r.Cookie("session-id")
+		cookie, _ := r.Cookie("session-id")
 		if cookie == nil {
 			expire := time.Now().AddDate(0, 0, 1)
 			uuid, _ := uuid.NewV7()
@@ -70,12 +72,12 @@ func withUser(next http.Handler) http.Handler {
 				Unparsed:   []string{"session-id=" + sid},
 			}
 
-			r.AddCookie(&newCookie)
+			http.SetCookie(w, &newCookie)
+			cookie = &newCookie
 		}
 
 		data := client.HGetAll(context.Background(), cookie.Value).Val()
-		*/
-		ctx := context.WithValue(r.Context(), "email", "ifdsaf")
+		ctx := context.WithValue(r.Context(), "email", data["email"])
 		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
