@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
-	cmsHandlers "youwe.com/go-web-accelerator/internal/cms/handlers"
-	userHandlers "youwe.com/go-web-accelerator/internal/user/handlers"
+	cms "youwe.com/go-web-accelerator/internal/cms/handlers"
+	user "youwe.com/go-web-accelerator/internal/user/handlers"
 )
 
 var client = redis.NewClient(&redis.Options{
@@ -20,19 +20,19 @@ var client = redis.NewClient(&redis.Options{
 })
 
 func main() {
-	userHandler := userHandlers.Handler{}
-	cmsHandler := cmsHandlers.Handler{}
+	user := user.Handler{}
+	cms := cms.Handler{}
 
 	mux := http.NewServeMux()
 
 	middlewareAuth := withCors(
 		withUser(
-			http.HandlerFunc(userHandler.HandleUserShow),
+			http.HandlerFunc(user.HandleUserShow),
 		),
 	)
 
-	mux.Handle("GET /", http.HandlerFunc(cmsHandler.Handle))
-	mux.Handle("GET /pages/", http.HandlerFunc(cmsHandler.Handle))
+	mux.Handle("GET /", http.HandlerFunc(cms.Handle))
+	mux.Handle("GET /pages/", http.HandlerFunc(cms.Handle))
 
 	mux.Handle("GET /user", middlewareAuth)
 
