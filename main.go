@@ -2,13 +2,15 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
-	"youwe.com/go-web-accelerator/handlers"
+	cmsHandlers "youwe.com/go-web-accelerator/internal/cms/handlers"
+	userHandlers "youwe.com/go-web-accelerator/internal/user/handlers"
 )
 
 var client = redis.NewClient(&redis.Options{
@@ -18,17 +20,21 @@ var client = redis.NewClient(&redis.Options{
 })
 
 func main() {
-	userHandler := handlers.UserHandler{}
+	userHandler := userHandlers.Handler{}
+	cmsHandler := cmsHandlers.Handler{}
 
 	mux := http.NewServeMux()
 
-	middleware := withCors(
+	middlewareAuth := withCors(
 		withUser(
 			http.HandlerFunc(userHandler.HandleUserShow),
 		),
 	)
 
-	mux.Handle("GET /user", middleware)
+	mux.Handle("GET /", http.HandlerFunc(cmsHandler.Handle))
+	mux.Handle("GET /pages/", http.HandlerFunc(cmsHandler.Handle))
+
+	mux.Handle("GET /user", middlewareAuth)
 
 	log.Fatal(http.ListenAndServe(":3000", mux))
 }
@@ -40,7 +46,10 @@ func withCors(next http.Handler) http.Handler {
 	})
 }
 
+// https://www.alexedwards.net/blog/working-with-cookies-in-go
+// https://astaxie.gitbooks.io/build-web-application-with-golang/content/en/06.2.html
 func withUser(next http.Handler) http.Handler {
+	// https://www.alexedwards.net/blog/working-with-cookies-in-go
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, _ := r.Cookie("session-id")
 		if cookie == nil {
@@ -74,9 +83,11 @@ func withUser(next http.Handler) http.Handler {
 
 			http.SetCookie(w, &newCookie)
 			cookie = &newCookie
+
 		}
 
 		data := client.HGetAll(context.Background(), cookie.Value).Val()
+		fmt.Println(data)
 		ctx := context.WithValue(r.Context(), "email", data["email"])
 		r = r.WithContext(ctx)
 

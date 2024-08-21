@@ -1,4 +1,33 @@
 services:
+  server:
+    container_name: ${PROJECT_NAME}-app
+    build:
+      context: ./
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/app
+      - /app/tmp
+    env_file:
+      - .env
+    ports:
+      - '${API_PORT}:${API_PORT}'
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mariadb
+    volumes:
+      - mysql_data:/var/lib/mysql
+    env_file:
+      - .env
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      
   redis:
     image: redis:latest
     ports:
@@ -7,6 +36,7 @@ services:
       test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
     volumes:
       - redis_data:/data
-
 volumes:
   redis_data:
+  mysql_data:
+    name: ${DB_NAME}

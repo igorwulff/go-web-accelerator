@@ -1,0 +1,20 @@
+package cms
+
+type MenuProps struct {
+    Url string
+    Label string
+    Children []MenuProps
+}
+
+templ Menu(props MenuProps) {
+    <li>
+        <a href={ templ.URL(props.Url) }>{props.Label}</a>
+        if len(props.Children) > 0 {
+            <ul>
+                for _, child := range props.Children {
+                    @Menu(child)
+                }
+            </ul>
+        }
+    </li>
+}
