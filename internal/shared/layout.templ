@@ -1,0 +1,56 @@
+package shared
+
+type NavProps struct {
+    Url string
+    Label string
+    Children []*NavProps
+}
+
+type MetaProps struct {
+    Title string
+    Lang string
+}
+
+templ Nav(props []*NavProps) {
+    <ul>
+        for _, item := range props {
+        <li>
+            <a href={ templ.URL(item.Url) }>{item.Label}</a>
+            if len(item.Children) > 0 {
+                <ul>
+                    @Nav(item.Children)
+                </ul>
+            }
+        </li>
+        }
+    </ul>
+}
+
+templ Footer() {
+
+}
+
+templ Base(meta MetaProps, nav []*NavProps) {
+    <!DOCTYPE html>
+	<html lang="{ meta.Lang } ">
+		<head>
+            <meta charset="UTF-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <title>{ meta.Title }</title>
+            <link href="https://unpkg.com/prismjs@1.29.0/themes/prism-twilight.css" rel="stylesheet"/>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"/>
+            <script src="https://unpkg.com/htmx.org@2.0.2" integrity="sha384-Y7hw+L/jvKeWIRRkqWYfPcvVxHzVzn5REgzbawhxAuQGwX1XWe70vji+VSeHOThJ" crossorigin="anonymous"></script>        </head>
+        <body>
+            <nav hx-boost="true" hx-target="#main" hx-select="#main" hx-swap="outerHTML" hx-push-url="true">
+            @Nav(nav)
+            </nav> 
+            <div id="main">
+            <p>This is from the base layout</p>
+            { children... }
+            </div>
+            <footer hx-boost="true" hx-target="#main" hx-select="#main" hx-swap="outerHTML" hx-push-url="true">
+            @Footer()
+            </footer>
+        </body>
+    </html>
+}

@@ -1,0 +1,22 @@
+package user
+
+import (
+    models "youwe.com/go-web-accelerator/internal/user/models"
+    layout "youwe.com/go-web-accelerator/internal/shared"
+    components "youwe.com/go-web-accelerator/internal/shared/components"
+)
+
+templ Show(
+    meta layout.MetaProps,
+    menu []*layout.NavProps,
+    user models.User,
+) {
+    @layout.Base(meta, menu) {
+        <h1>Hello {user.Email} from the user page.</h1>
+        @components.Input(components.InputProps{
+            Type: "email",
+            Name: "email",
+            Label: "Email",
+        })
+    }
+}

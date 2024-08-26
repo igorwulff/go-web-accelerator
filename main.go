@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
-	cms "youwe.com/go-web-accelerator/internal/cms/handlers"
-	user "youwe.com/go-web-accelerator/internal/user/handlers"
+	"youwe.com/go-web-accelerator/internal/cms"
+	"youwe.com/go-web-accelerator/internal/user"
 )
 
 var client = redis.NewClient(&redis.Options{
@@ -19,23 +19,41 @@ var client = redis.NewClient(&redis.Options{
 	DB:       0,  // use default DB
 })
 
-func main() {
-	user := user.Handler{}
-	cms := cms.Handler{}
+type Handlers struct {
+	Slug     string
+	Handlers func(string, *http.ServeMux)
+}
 
+var handlers = []Handlers{
+	{
+		Slug:     "cms",
+		Handlers: cms.Handlers,
+	},
+	{
+		Slug:     "user",
+		Handlers: user.Handlers,
+	},
+}
+
+func main() {
 	mux := http.NewServeMux()
 
-	middlewareAuth := withCors(
+	/*middlewareAuth := withCors(
 		withUser(
 			http.HandlerFunc(user.HandleUserShow),
 		),
-	)
+	)*/
 
-	mux.Handle("GET /", http.HandlerFunc(cms.Handle))
+	for _, h := range handlers {
+		log.Printf("Serving %s", h.Slug)
+		h.Handlers("/"+h.Slug, mux)
+	}
+
+	/*mux.Handle("GET /", http.HandlerFunc(cms.Handle))
 	mux.Handle("GET /pages/", http.HandlerFunc(cms.Handle))
 
-	mux.Handle("GET /user", middlewareAuth)
-
+	mux.Handle("GET /user", middlewareAuth)*/
+	log.Println("Listening on localhost:3000")
 	log.Fatal(http.ListenAndServe(":3000", mux))
 }
 
@@ -77,8 +95,9 @@ func withUser(next http.Handler) http.Handler {
 				MaxAge:     86400,
 				Secure:     true,
 				HttpOnly:   true,
-				Raw:        "session-id=" + sid,
-				Unparsed:   []string{"session-id=" + sid},
+
+				Raw:      "session-id=" + sid,
+				Unparsed: []string{"session-id=" + sid},
 			}
 
 			http.SetCookie(w, &newCookie)
